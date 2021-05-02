@@ -25,13 +25,13 @@
 
 #include "LVGLInputDriverBase.h"
 
-class LVGLTouchDriverDISCO_F769NI : public LVGLInputDriverBase {
+class LVGLTouchDriverDISCO_F769NI : public LVGLInputDriver {
 public:
     /*
         construct touch driver from SPI pins
         Disp is optional, if null then lvgl will use default display
     */
-    LVGLTouchDriverDISCO_F769NI(LVGLDispDriverBase *lvglDispDriver = nullptr);
+    LVGLTouchDriverDISCO_F769NI(LVGLDispDriver *lvglDispDriver = nullptr);
 
 private:
 

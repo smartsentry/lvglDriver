@@ -27,7 +27,7 @@
 #include "LVGLDispDriverBase.h"
 #include "LCD_DISCO_F769NI.h"
 
-class LVGLDispDISCO_F769NI : public LVGLDispDriverBase {
+class LVGLDispDISCO_F769NI : public LVGLDispDriver {
 public:
     LVGLDispDISCO_F769NI(uint32_t nBufferRows = 10);
 

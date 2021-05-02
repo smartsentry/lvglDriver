@@ -27,7 +27,7 @@ static LCD_DISCO_F769NI lcd;
 
 
 LVGLDispDISCO_F769NI::LVGLDispDISCO_F769NI(uint32_t nBufferRows) :
-    LVGLDispDriverBase(LV_HOR_RES_MAX, LV_VER_RES_MAX),
+    LVGLDispDriver(LV_HOR_RES_MAX, LV_VER_RES_MAX),
     _nBufferRows(nBufferRows)
 {
     lcd.Clear(LCD_COLOR_BLUE);
@@ -75,4 +75,10 @@ void LVGLDispDISCO_F769NI::disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *
     /* IMPORTANT!!!
      * Inform the graphics library that you are ready with the flushing*/
     lv_disp_flush_ready(disp_drv);
+}
+
+MBED_WEAK LVGLDispDriver *LVGLDispDriver::get_target_default_instance()
+{
+    static LVGLDispDISCO_F769NI drv;
+    return &drv;
 }

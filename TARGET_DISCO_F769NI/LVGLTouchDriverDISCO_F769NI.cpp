@@ -30,8 +30,8 @@ TS_DISCO_F769NI ts;
  *      DEFINES
  *********************/
 
-LVGLTouchDriverDISCO_F769NI::LVGLTouchDriverDISCO_F769NI(LVGLDispDriverBase *lvglDispDriver) :
-    LVGLInputDriverBase(lvglDispDriver)
+LVGLTouchDriverDISCO_F769NI::LVGLTouchDriverDISCO_F769NI(LVGLDispDriver *lvglDispDriver) :
+    LVGLInputDriver(lvglDispDriver)
 {
     ts.Init(800, 472);
 
@@ -60,3 +60,8 @@ bool LVGLTouchDriverDISCO_F769NI::read(lv_indev_drv_t * indev_drv, lv_indev_data
     return false;
 }
 
+MBED_WEAK LVGLInputDriver *LVGLInputDriver::get_target_default_instance_touchdrv(LVGLDispDriver *disp)
+{
+    static LVGLTouchDriverDISCO_F769NI lvglTouch(disp);
+    return &lvglTouch;
+}
