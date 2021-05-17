@@ -24,10 +24,11 @@
 #include "LCD_DISCO_F469NI.h"
 #include "LVGLDispDriver_DISCO_F469NI.h"
 
-#define BUFFERLINES (480/8)
+#define BUFFERLINES (480/24)
 
 static LCD_DISCO_F469NI lcd;
-static lv_color_t xbuf[LV_HOR_RES_MAX * BUFFERLINES];
+static lv_color_t xbuf1[LV_HOR_RES_MAX * BUFFERLINES];
+static lv_color_t xbuf2[LV_HOR_RES_MAX * BUFFERLINES];
 
 extern "C" void dmaXFerComplete(DMA2D_HandleTypeDef *hdma2d) 
 {
@@ -62,7 +63,7 @@ void LVGLDispDISCO_F469NI::init()
     _disp_drv.buffer = &_disp_buf_1;
 
 //    lv_disp_buf_init(&_disp_buf_1, _buf1_1, NULL, bufferSize);   /* Initialize the display buffer */
-    lv_disp_buf_init(&_disp_buf_1, xbuf, NULL, bufferSize);   /* Initialize the display buffer */
+    lv_disp_buf_init(&_disp_buf_1, xbuf1, xbuf2, bufferSize);   /* Initialize the display buffer */
 
     /*Finally register the driver*/
     _disp = lv_disp_drv_register(&_disp_drv);
