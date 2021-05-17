@@ -23,8 +23,16 @@
 
 #include "LVGLDispDriver_DISCO_F769NI.h"
 
-static LCD_DISCO_F769NI lcd;
+#define BUFFERLINES (480/24)
 
+static LCD_DISCO_F769NI lcd;
+static lv_color_t xbuf1[LV_HOR_RES_MAX * BUFFERLINES];
+//static lv_color_t xbuf2[LV_HOR_RES_MAX * BUFFERLINES];
+
+extern "C" void dmaXFerComplete(DMA2D_HandleTypeDef *hdma2d) 
+{
+    lv_disp_flush_ready(LVGLDispDriver::get_target_default_instance()->getLVDispDrv());
+}
 
 LVGLDispDISCO_F769NI::LVGLDispDISCO_F769NI(uint32_t nBufferRows) :
     LVGLDispDriver(LV_HOR_RES_MAX, LV_VER_RES_MAX),
@@ -42,10 +50,10 @@ void LVGLDispDISCO_F769NI::init()
 {
     size_t bufferSize = LV_HOR_RES_MAX * _nBufferRows;
 
-    // allocate memory for display buffer
-    _buf1_1 = new lv_color_t[bufferSize];             /* a buffer for n rows */
-    MBED_ASSERT(_buf1_1 != nullptr);
-    memset(_buf1_1, 0, bufferSize*sizeof(lv_color_t));
+    // // allocate memory for display buffer
+    // _buf1_1 = new lv_color_t[bufferSize];             /* a buffer for n rows */
+    // MBED_ASSERT(_buf1_1 != nullptr);
+    // memset(_buf1_1, 0, bufferSize*sizeof(lv_color_t));
 
     /*Used to copy the buffer's content to the display*/
     _disp_drv.flush_cb = disp_flush;
@@ -53,16 +61,24 @@ void LVGLDispDISCO_F769NI::init()
     /*Set a display buffer*/
     _disp_drv.buffer = &_disp_buf_1;
 
-    lv_disp_buf_init(&_disp_buf_1, _buf1_1, NULL, bufferSize);   /* Initialize the display buffer */
+//    lv_disp_buf_init(&_disp_buf_1, _buf1_1, NULL, bufferSize);   /* Initialize the display buffer */
+    lv_disp_buf_init(&_disp_buf_1, xbuf1, nullptr, bufferSize);   /* Initialize the display buffer */
 
     /*Finally register the driver*/
     _disp = lv_disp_drv_register(&_disp_drv);
-    lcd.Clear(LCD_COLOR_RED);
+    //lcd.Clear(LCD_COLOR_RED);
+
+    BSP_LCD_SetDMACpltCallback(dmaXFerComplete);
 }
 
 void LVGLDispDISCO_F769NI::disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p)
 {
-    //DrawBitmap(uint32_t Xpos, uint32_t Ypos, uint8_t *pbmp);
+    uint32_t width = area->x2 - area->x1 + 1;
+    uint32_t height =  area->y2 - area->y1 + 1;
+
+    BSP_LCD_TransferBitmap(area->x1, area->y1, width, height, (uint32_t*)color_p);
+
+/*
     int32_t x;
     int32_t y;
     for (y = area->y1; y <= area->y2; y++) {
@@ -71,14 +87,15 @@ void LVGLDispDISCO_F769NI::disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *
             color_p++;
         }
     }
+*/
 
     /* IMPORTANT!!!
      * Inform the graphics library that you are ready with the flushing*/
-    lv_disp_flush_ready(disp_drv);
+    //lv_disp_flush_ready(disp_drv);
 }
 
 MBED_WEAK LVGLDispDriver *LVGLDispDriver::get_target_default_instance()
 {
-    static LVGLDispDISCO_F769NI drv;
+    static LVGLDispDISCO_F769NI drv(BUFFERLINES);
     return &drv;
 }
