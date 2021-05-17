@@ -29,14 +29,14 @@
 
 class LVGLDispDISCO_F746NG : public LVGLDispDriver {
 public:
-    LVGLDispDISCO_F746NG(uint32_t nBufferRows = 272/4);
-
+    LVGLDispDISCO_F746NG(uint32_t nBufferRows = 8);
+    
 private:
+    LCD_DISCO_F746NG _lcd;
+
     uint32_t _nBufferRows;
     void init();
     static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p);
-
-    void controllerInit();
 
     lv_disp_buf_t _disp_buf_1;
     lv_color_t *_buf1_1;     // display working buffer
