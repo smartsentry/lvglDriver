@@ -29,6 +29,10 @@
 #define USE_DMA (1)
 #define USE_DOUBLE_BUFFER (1)
 
+static Timer t;
+static int t0;
+static int t1;
+
 #if (USE_STATIC_BUFFER == 1)
 static lv_color_t xbuf1[LV_HOR_RES_MAX * BUFFERLINES];
 #  if   (USE_DOUBLE_BUFFER == 1)
@@ -40,6 +44,7 @@ static lv_color_t xbuf2[LV_HOR_RES_MAX * BUFFERLINES];
 extern "C" void dmaXFerComplete(DMA2D_HandleTypeDef *hdma2d) 
 {
     lv_disp_flush_ready(LVGLDispDriver::get_target_default_instance()->getLVDispDrv());
+    // t1 = t.elapsed_time().count();
 }
 #else
     LCD_DISCO_F769NI* pLcd;
@@ -138,6 +143,8 @@ void LVGLDispDISCO_F769NI::init()
     pLcd = &_lcd;
     debug("display using DrawPixel, addr LVGLDispDISCO_F769NI: %p  %s\n", pLcd, get_RAM_name(pLcd));
 #endif
+
+    t.start();
 }
 
 void LVGLDispDISCO_F769NI::disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p)
@@ -146,8 +153,13 @@ void LVGLDispDISCO_F769NI::disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *
     uint32_t width = area->x2 - area->x1 + 1;
     uint32_t height =  area->y2 - area->y1 + 1;
 
-    //SCB_CleanDCache();  // ok, works
+    printf("transfer cache: %d us\n", t1-t0);
+    t0 = t.elapsed_time().count();
+    SCB_CleanDCache();  // ok, works
+    t1 = t.elapsed_time().count();
+    printf("transfer cache: %d us\n", t1-t0);
     //SCB_CleanDCache_by_Addr((uint32_t*)color_p, height * LV_HOR_RES_MAX * sizeof(lv_color_t)); // ok, works, but maybe slower than CleanDCache()
+
     BSP_LCD_TransferBitmap(area->x1, area->y1, width, height, (uint32_t*)color_p);
 #else
     int32_t x;
