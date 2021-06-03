@@ -63,7 +63,7 @@ LVGLTouchDriverXPT2046::LVGLTouchDriverXPT2046(PinName mosi, PinName miso, PinNa
     _my_indev = lv_indev_drv_register(&_indev_drv);
 }
 
-bool LVGLTouchDriverXPT2046::read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
+void LVGLTouchDriverXPT2046::read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 {
     static int16_t last_x = 0;
     static int16_t last_y = 0;
@@ -94,8 +94,8 @@ bool LVGLTouchDriverXPT2046::read(lv_indev_drv_t * indev_drv, lv_indev_data_t * 
         y |= temp;
         y >>=3;
         
-        data->raw.x = x;
-        data->raw.y = y;
+        // data->raw.x = x;
+        // data->raw.y = y;
 
         me->corr(&x, &y);
         me->avg(&x, &y);
@@ -115,8 +115,6 @@ bool LVGLTouchDriverXPT2046::read(lv_indev_drv_t * indev_drv, lv_indev_data_t * 
 
     data->point.x = x;
     data->point.y = y;
-
-    return false;
 }
 
 void LVGLTouchDriverXPT2046::corr(int16_t * x, int16_t * y)

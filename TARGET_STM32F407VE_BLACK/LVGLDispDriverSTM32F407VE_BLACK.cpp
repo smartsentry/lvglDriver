@@ -129,9 +129,9 @@ void LVGLDispSTM32F407VE_BLACK::init()
     _disp_drv.flush_cb = disp_flush;
 
     /*Set a display buffer*/
-    _disp_drv.buffer = &_disp_buf_1;
+    _disp_drv.draw_buf = &_disp_buf_1;
 
-    lv_disp_buf_init(&_disp_buf_1, _buf1_1, NULL, bufferSize);   /* Initialize the display buffer */
+    lv_disp_draw_buf_init(&_disp_buf_1, _buf1_1, NULL, bufferSize);   /* Initialize the display buffer */
 
     /*Finally register the driver*/
     _disp = lv_disp_drv_register(&_disp_drv);

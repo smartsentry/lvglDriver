@@ -37,7 +37,8 @@ private:
 
     void controllerInit();
 
-    lv_disp_buf_t _disp_buf_1;
+    lv_disp_draw_buf_t _disp_buf_1;
+
     lv_color_t *_buf1_1;     // display working buffer
 };
 
