@@ -26,8 +26,6 @@
 /*********************
  *      DEFINES
  *********************/
-#define GC9A01_BAUD      		2000000    /*< 2,5 MHz (400 ns)*/
-
 #define GC9A01_CMD_MODE     0
 #define GC9A01_DATA_MODE    1
 
@@ -43,7 +41,7 @@
 #define GC9A01_MADCTL_MY  0x80
 #define GC9A01_MADCTL_MX  0x40
 #define GC9A01_MADCTL_MV  0x20
-#define GC9A01_MADCTL_RGB 0x00
+#define GC9A01_MADCTL_RGB 0x08
 #define GC9A01_DISFNCTRL	0xB6
 
 /* Init script function */
@@ -66,7 +64,7 @@ enum GC9A01_cmd {
  **********************/
 // Documentation on op codes for GC9A01 are very hard to find.
 // Will document should they be found.
-static struct GC9A01_function GC9A01_cfg_script[] = {
+static struct GC9A01_function GC9A01_cfg_table[] = {
 	{ GC9A01_START, GC9A01_START},
 	{ GC9A01_CMD, 0xEF},
 
@@ -115,15 +113,16 @@ static struct GC9A01_function GC9A01_cfg_script[] = {
 	{ GC9A01_CMD, 0x8F},
 	{ GC9A01_DATA, 0xFF},
 
-	{ GC9A01_CMD, GC9A01_DISFNCTRL}, // Display Function Control
+	{ GC9A01_CMD, GC9A01_DISFNCTRL}, 	// Display Function Control
 	{ GC9A01_DATA, 0x00},
 	{ GC9A01_DATA, 0x00},
 
-	{ GC9A01_CMD, GC9A01_MADCTL}, // Memory Access Control
-	{ GC9A01_DATA, 0x48}, // Set the display direction 0,1,2,3	four directions
+	{ GC9A01_CMD, GC9A01_COLMOD}, 		// COLMOD: Pixel Format Set
+	{ GC9A01_DATA, 0x05}, 				// 16 Bits per pixel
 
-	{ GC9A01_CMD, GC9A01_COLMOD}, // COLMOD: Pixel Format Set
-	{ GC9A01_DATA, 0x05}, // 16 Bits per pixel
+	{ GC9A01_CMD, GC9A01_MADCTL }, 		// Memory Access Control
+	{ GC9A01_DATA, GC9A01_MADCTL_MX | GC9A01_MADCTL_RGB }, 	// Set the display direction 0,1,2,3	four directions
+//	{ GC9A01_DATA, GC9A01_MADCTL_MX }, 	// Set the display direction 0,1,2,3	four directions
 
 	{ GC9A01_CMD, 0x90},
 	{ GC9A01_DATA, 0x08},
@@ -292,7 +291,7 @@ static struct GC9A01_function GC9A01_cfg_script[] = {
 	{ GC9A01_DATA, 0x3E},
 	{ GC9A01_DATA, 0x07},
 
-	{ GC9A01_CMD, 0x35}, // Tearing Effect Line ON
+//	{ GC9A01_CMD, 0x35}, // Tearing Effect Line ON
 	{ GC9A01_CMD, 0x21}, // Display Inversion ON
 
 	{ GC9A01_CMD, 0x11}, // Sleep Out Mode
@@ -341,6 +340,9 @@ void LVGLDispGC9A01::init()
     /*Finally register the driver*/
     _disp_drv.user_data = this;
     _disp = lv_disp_drv_register(&_disp_drv);
+
+	// workaround, default theme is not set when display is not 1st one
+	_disp->theme = lv_theme_default_init(_disp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), LV_THEME_DEFAULT_DARK, LV_FONT_DEFAULT);
 }
 
 void LVGLDispGC9A01::disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p)
@@ -354,9 +356,13 @@ void LVGLDispGC9A01::disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, 
 
 void LVGLDispGC9A01::flush(const lv_area_t *area, lv_color_t *color_p)
 {
+  	_spi.format(8, 0);
+
     _cs = 0;
     GC9A01_set_addr_win(area->x1, area->y1, area->x2, area->y2);
-    int32_t len = (area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1) * 2;
+    int32_t len = (area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1); // in 16 bit words // * 2;
+
+  	_spi.format(16, 0);
 
     _cmd = 1;
     _spi.write((const char*)color_p, len, nullptr, 0);
@@ -409,19 +415,19 @@ void LVGLDispGC9A01::GC9A01_run_cfg_script(void)
 	int end_script = 0;
 
 	do {
-		switch (GC9A01_cfg_script[i].cmd)
+		switch (GC9A01_cfg_table[i].cmd)
 		{
 			case GC9A01_START:
 				break;
 			case GC9A01_CMD:
-				GC9A01_command( GC9A01_cfg_script[i].data & 0xFF );
+				GC9A01_command( GC9A01_cfg_table[i].data & 0xFF );
 				break;
 			case GC9A01_DATA:
-				GC9A01_data( GC9A01_cfg_script[i].data & 0xFF );
+				GC9A01_data( GC9A01_cfg_table[i].data & 0xFF );
 				break;
 			case GC9A01_DELAY:
                 {
-                    chrono::milliseconds delaytime(GC9A01_cfg_script[i].data);
+                    chrono::milliseconds delaytime(GC9A01_cfg_table[i].data);
                     ThisThread::sleep_for(delaytime);
                     break;
                 }
