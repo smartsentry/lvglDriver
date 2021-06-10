@@ -322,7 +322,7 @@ LVGLDispGC9A01::LVGLDispGC9A01(SPI &spi, PinName pinCS, PinName pinCMD, PinName 
 
 void LVGLDispGC9A01::init()
 {
-    size_t bufferSize = LV_HOR_RES_MAX * _nBufferRows;
+    size_t bufferSize = _horRes * _nBufferRows;
 
     // allocate memory for display buffer
     _buf1_1 = new lv_color_t[bufferSize];             /* a buffer for n rows */
