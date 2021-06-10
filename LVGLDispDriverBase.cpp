@@ -26,7 +26,9 @@
 LVGLDispDriver::LVGLDispDriver(uint32_t horRes, uint32_t verRes)
 {
     _disp = nullptr;
-    
+    _horRes = horRes;
+    _verRes = verRes;
+
     /* make sure lvgl is initialized */
     /* TODO: call only once in the first instance of a driver */
     lv_init();
