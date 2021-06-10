@@ -24,6 +24,8 @@
 #include "LVGLDispDriver_DISCO_F769NI.h"
 #include "systool.h"
 
+#define LV_HOR_RES_MAX          (800)
+#define LV_VER_RES_MAX          (480)
 #define BUFFERLINES (20)
 #define USE_STATIC_BUFFER (0)
 #define USE_DMA (1)
@@ -44,7 +46,7 @@ static lv_color_t xbuf2[LV_HOR_RES_MAX * BUFFERLINES];
 extern "C" void dmaXFerComplete(DMA2D_HandleTypeDef *hdma2d) 
 {
     lv_disp_flush_ready(LVGLDispDriver::get_target_default_instance()->getLVDispDrv());
-    // t1 = t.elapsed_time().count();
+    // t1 = t.elapsed_time().count();      // get µs timestamp
 }
 #else
     LCD_DISCO_F769NI* pLcd;
@@ -54,6 +56,7 @@ LVGLDispDISCO_F769NI::LVGLDispDISCO_F769NI(uint32_t nBufferRows) :
     LVGLDispDriver(LV_HOR_RES_MAX, LV_VER_RES_MAX),
     _nBufferRows(nBufferRows)
 {
+    // init display and show message using BSP draw functions (not lvgl)
     _lcd.Clear(LCD_COLOR_BLUE);
     _lcd.SetBackColor(LCD_COLOR_BLUE);
     _lcd.SetTextColor(LCD_COLOR_WHITE);
@@ -68,20 +71,18 @@ void LVGLDispDISCO_F769NI::init()
 
 #if (USE_STATIC_BUFFER == 0)
     // allocate memory for display buffer
-    //lv_color_t* xbuf1 = new lv_color_t[bufferSize];             /* a buffer for n rows */
+    // lv_color_t* xbuf1 = new lv_color_t[bufferSize];          // buffer on heap
+    // lv_color_t* xbuf1 = (lv_color_t*)0x20000800;             // buffer in DTCM
+    lv_color_t* xbuf1 = (lv_color_t*)0x20060000;             // buffer in SRAM1
 
-    // lv_color_t* xbuf1 = new lv_color_t[64*1024/4 + 32/4];            /* 64k + alignement spare */
-    // xbuf1 += 8;     // +32 Byte
-    // xbuf1 = (lv_color_t*)((uint32_t)xbuf1 & ~31UL);
-    lv_color_t* xbuf1 = (lv_color_t*)0x20070000;
-
-//    lv_color_t* xbuf1 = (lv_color_t*)0x20000800;              // test: use buffer in DTCM
     MBED_ASSERT(xbuf1 != nullptr);
     memset(xbuf1, 0, bufferSize*sizeof(lv_color_t));
     debug("init display, using heap buffer, addr: %p  %s\n", xbuf1, get_RAM_name(xbuf1));
 #  if   (USE_DOUBLE_BUFFER == 1)
-//    lv_color_t* xbuf2 = new lv_color_t[bufferSize];             /* a buffer for n rows */
-    lv_color_t* xbuf2 = (lv_color_t*)0x20060000;
+    // lv_color_t* xbuf2 = new lv_color_t[bufferSize];          // buffer on heap
+    // lv_color_t* xbuf2 = (lv_color_t*)0x20010400;             // buffer in DTCM
+    lv_color_t* xbuf2 = (lv_color_t*)0x20070000;             // buffer in SRAM1
+
     MBED_ASSERT(xbuf2 != nullptr);
     memset(xbuf2, 0, bufferSize*sizeof(lv_color_t));
     debug("init display, using double buffer, addr: %p  %s\n", xbuf2, get_RAM_name(xbuf2));
@@ -97,12 +98,12 @@ void LVGLDispDISCO_F769NI::init()
     _disp_drv.flush_cb = disp_flush;
 
     /*Set a display buffer*/
-    _disp_drv.buffer = &_disp_buf_1;
+    _disp_drv.draw_buf = &_disp_buf_1;
 
 #if (USE_DOUBLE_BUFFER == 1)
-    lv_disp_buf_init(&_disp_buf_1, xbuf1, xbuf2, bufferSize);   /* Initialize the display buffer */
+    lv_disp_draw_buf_init(&_disp_buf_1, xbuf1, xbuf2, bufferSize);   /* Initialize the display buffer */
 #else
-    lv_disp_buf_init(&_disp_buf_1, xbuf1, nullptr, bufferSize);   /* Initialize the display buffer */
+    lv_disp_draw_buf_init(&_disp_buf_1, xbuf1, nullptr, bufferSize);   /* Initialize the display buffer */
 #endif
 
     /*Finally register the driver*/
@@ -113,6 +114,7 @@ void LVGLDispDISCO_F769NI::init()
     BSP_LCD_SetDMACpltCallback(dmaXFerComplete);
 
 #if 1
+    // configure buffer as write-through
     {
         /* Disable the MPU */
         HAL_MPU_Disable();
@@ -120,7 +122,7 @@ void LVGLDispDISCO_F769NI::init()
         ARM_MPU_SetRegion(
             ARM_MPU_RBAR(
                 4,                          // Region 4: not (yet) used by Mbed
-                (uint32_t)xbuf2),                // Base, must be aligned 
+                (uint32_t)xbuf1),                // Base, must be aligned 
             ARM_MPU_RASR(
                 1,                          // DisableExec
                 ARM_MPU_AP_FULL,            // AccessPermission
@@ -144,7 +146,7 @@ void LVGLDispDISCO_F769NI::init()
     debug("display using DrawPixel, addr LVGLDispDISCO_F769NI: %p  %s\n", pLcd, get_RAM_name(pLcd));
 #endif
 
-    t.start();
+    t.start();      // start performance measurement timer
 }
 
 void LVGLDispDISCO_F769NI::disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p)
@@ -153,15 +155,16 @@ void LVGLDispDISCO_F769NI::disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *
     uint32_t width = area->x2 - area->x1 + 1;
     uint32_t height =  area->y2 - area->y1 + 1;
 
-    printf("transfer cache: %d us\n", t1-t0);
-    t0 = t.elapsed_time().count();
-    SCB_CleanDCache();  // ok, works
-    t1 = t.elapsed_time().count();
-    printf("transfer cache: %d us\n", t1-t0);
+    // t0 = t.elapsed_time().count();
+    // SCB_CleanDCache();  // ok, works
     //SCB_CleanDCache_by_Addr((uint32_t*)color_p, height * LV_HOR_RES_MAX * sizeof(lv_color_t)); // ok, works, but maybe slower than CleanDCache()
+
+    // printf("transfer cache: %d us\n", t1-t0);   // print previous transfer time
+    // t0 = t.elapsed_time().count();              // get start time in µs
 
     BSP_LCD_TransferBitmap(area->x1, area->y1, width, height, (uint32_t*)color_p);
 #else
+    // use DrawPixel to buffer write to screen
     int32_t x;
     int32_t y;
     for (y = area->y1; y <= area->y2; y++) {

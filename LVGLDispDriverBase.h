@@ -33,6 +33,9 @@ public:
     lv_disp_t* getLVDisp() { return _disp; };
     lv_disp_drv_t* getLVDispDrv() { return &_disp_drv; };
 
+    uint32_t getHorRes() { return _horRes; };
+    uint32_t getVerRes() { return _verRes; };
+
     /** Return the default diplay device
      *
      * Returns the default display driver based on the configuration JSON.
@@ -48,6 +51,8 @@ public:
 
 protected:
     LVGLDispDriver(uint32_t horRes, uint32_t verRes);
+    uint32_t    _horRes;
+    uint32_t    _verRes;
 
     virtual void init() {};
 

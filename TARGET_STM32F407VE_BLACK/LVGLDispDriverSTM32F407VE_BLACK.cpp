@@ -24,6 +24,9 @@
 #include "LVGLDispDriverSTM32F407VE_BLACK.h"
 #include "ili9341_fsmc.h"
 
+#define LV_HOR_RES_MAX          (320)
+#define LV_VER_RES_MAX          (240)
+
 /*
     use FSMC
 */
@@ -103,7 +106,7 @@ static int fsmc_lcd_init()
 };
 
 LVGLDispSTM32F407VE_BLACK::LVGLDispSTM32F407VE_BLACK(uint32_t nBufferRows) :
-    LVGLDispDriver(320, 240),
+    LVGLDispDriver(LV_HOR_RES_MAX, LV_VER_RES_MAX),
     _nBufferRows(nBufferRows)
 {
     // low level hardware init
