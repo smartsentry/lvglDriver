@@ -26,6 +26,7 @@
 
 #define LV_HOR_RES_MAX          (320)
 #define LV_VER_RES_MAX          (240)
+#define USE_DMA                 (1)
 
 /*
     use FSMC
@@ -105,12 +106,63 @@ static int fsmc_lcd_init()
     return status;
 };
 
+static DMA_HandleTypeDef hdma_memtomem_dma2_stream0;
+
+extern "C" void dmaXFerComplete(DMA_HandleTypeDef *hdma) 
+{
+    if (hdma == &hdma_memtomem_dma2_stream0)
+	{
+        lv_disp_flush_ready(LVGLDispDriver::get_target_default_instance()->getLVDispDrv());
+    }
+}
+
+/** 
+  * Enable DMA controller clock
+  * Configure DMA for memory to memory transfers
+  *   hdma_memtomem_dma2_stream0
+  */
+static void fsmc_dma_init(void) 
+{
+    /* DMA controller clock enable */
+    __HAL_RCC_DMA2_CLK_ENABLE();
+
+    /* Configure DMA request hdma_memtomem_dma2_stream0 on DMA2_Stream0 */
+    hdma_memtomem_dma2_stream0.Instance = DMA2_Stream0;
+    hdma_memtomem_dma2_stream0.Init.Channel = DMA_CHANNEL_0;
+    hdma_memtomem_dma2_stream0.Init.Direction = DMA_MEMORY_TO_MEMORY;
+    hdma_memtomem_dma2_stream0.Init.PeriphInc = DMA_PINC_ENABLE;
+    hdma_memtomem_dma2_stream0.Init.MemInc = DMA_MINC_DISABLE;
+    hdma_memtomem_dma2_stream0.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+    hdma_memtomem_dma2_stream0.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+    hdma_memtomem_dma2_stream0.Init.Mode = DMA_NORMAL;
+    hdma_memtomem_dma2_stream0.Init.Priority = DMA_PRIORITY_LOW;
+    hdma_memtomem_dma2_stream0.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+    hdma_memtomem_dma2_stream0.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+    hdma_memtomem_dma2_stream0.Init.MemBurst = DMA_MBURST_SINGLE;
+    hdma_memtomem_dma2_stream0.Init.PeriphBurst = DMA_PBURST_SINGLE;
+    if (HAL_DMA_Init(&hdma_memtomem_dma2_stream0) != HAL_OK)
+    {
+        debug("dma init error\n");
+    }
+
+    /* DMA interrupt init */
+    /* DMA2_Stream0_IRQn interrupt configuration */
+    HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 2, 0);
+    HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+
+    // register DMA-Callback
+	HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_stream0,
+			HAL_DMA_XFER_CPLT_CB_ID, &dmaXFerComplete);
+}
+
+
 LVGLDispSTM32F407VE_BLACK::LVGLDispSTM32F407VE_BLACK(uint32_t nBufferRows) :
     LVGLDispDriver(LV_HOR_RES_MAX, LV_VER_RES_MAX),
     _nBufferRows(nBufferRows)
 {
     // low level hardware init
     fsmc_lcd_init();
+    fsmc_dma_init();
 
     // tft controller init
     ili9341_fsmc_init();
@@ -138,26 +190,41 @@ void LVGLDispSTM32F407VE_BLACK::init()
 
     /*Finally register the driver*/
     _disp = lv_disp_drv_register(&_disp_drv);
+
+	// workaround, default theme is not set when display is not 1st one
+	_disp->theme = lv_theme_default_init(_disp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), LV_THEME_DEFAULT_DARK, LV_FONT_DEFAULT);
 }
 
 void LVGLDispSTM32F407VE_BLACK::disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p)
 {
     ili9341_fsmc_setAddrWindow(area->x1, area->y1, area->x2, area->y2);
     *ili9341_fsmcCommand = ILI9341_MEMORYWRITE; // 0x2c
+#ifdef USE_DMA
+    uint32_t width = area->x2 - area->x1 + 1;
+    uint32_t height =  area->y2 - area->y1 + 1;
+
+	HAL_DMA_Start_IT(&hdma_memtomem_dma2_stream0,
+			(uint32_t)color_p, (uint32_t)ili9341_fsmcData, width*height);
+#else
     for (int32_t y = area->y1; y <= area->y2; y++) {
         for (int32_t x = area->x1; x <= area->x2; x++) {
             *ili9341_fsmcData = color_p->full;
             color_p++;
         }
     }
-
     /* IMPORTANT!!!
      * Inform the graphics library that you are ready with the flushing*/
     lv_disp_flush_ready(disp_drv);
+#endif
 }
 
 MBED_WEAK LVGLDispDriver *LVGLDispDriver::get_target_default_instance()
 {
     static LVGLDispSTM32F407VE_BLACK drv;
     return &drv;
+}
+
+extern "C" void DMA2_Stream0_IRQHandler(void)
+{
+    HAL_DMA_IRQHandler(&hdma_memtomem_dma2_stream0);
 }
