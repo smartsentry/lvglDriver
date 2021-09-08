@@ -28,7 +28,7 @@
 
 class LVGLDispSTM32F407VE_BLACK : public LVGLDispDriver {
 public:
-    LVGLDispSTM32F407VE_BLACK(uint32_t nBufferRows = 10);
+    LVGLDispSTM32F407VE_BLACK(uint32_t nBufferRows = 40);
 
 private:
     uint32_t _nBufferRows;
