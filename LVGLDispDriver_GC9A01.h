@@ -27,7 +27,7 @@
 
 class LVGLDispGC9A01 : public LVGLDispDriver {
 public:
-    LVGLDispGC9A01(SPI &spi, PinName pinCS, PinName pinCMD, PinName pinRST, PinName pinBacklight, uint32_t nBufferRows = 10, uint32_t resolutionX = 240, uint32_t resolutionY = 240);
+    LVGLDispGC9A01(SPI &spi, PinName pinCS, PinName pinCMD, PinName pinRST, PinName pinBacklight, uint32_t nBufferRows = 20, uint32_t resolutionX = 240, uint32_t resolutionY = 240);
 
 private:
     SPI &_spi;

@@ -291,7 +291,7 @@ static struct GC9A01_function GC9A01_cfg_table[] = {
 	{ GC9A01_DATA, 0x3E},
 	{ GC9A01_DATA, 0x07},
 
-//	{ GC9A01_CMD, 0x35}, // Tearing Effect Line ON
+	{ GC9A01_CMD, 0x35}, // Tearing Effect Line ON
 	{ GC9A01_CMD, 0x21}, // Display Inversion ON
 
 	{ GC9A01_CMD, 0x11}, // Sleep Out Mode
