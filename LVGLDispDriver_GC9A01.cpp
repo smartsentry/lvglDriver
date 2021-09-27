@@ -356,13 +356,13 @@ void LVGLDispGC9A01::disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, 
 
 void LVGLDispGC9A01::flush(const lv_area_t *area, lv_color_t *color_p)
 {
-  	_spi.format(8, 0);
+  	//_spi.format(8, 0);
 
     _cs = 0;
     GC9A01_set_addr_win(area->x1, area->y1, area->x2, area->y2);
-    int32_t len = (area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1); // in 16 bit words // * 2;
+    int32_t len = (area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1) * 2; // in 16 bit words // * 2;
 
-  	_spi.format(16, 0);
+  	//_spi.format(16, 0);
 
     _cmd = 1;
     _spi.write((const char*)color_p, len, nullptr, 0);
