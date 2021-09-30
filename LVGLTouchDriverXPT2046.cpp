@@ -59,6 +59,7 @@ LVGLTouchDriverXPT2046::LVGLTouchDriverXPT2046(PinName mosi, PinName miso, PinNa
     _indev_drv.type = LV_INDEV_TYPE_POINTER; // touchpad
     _indev_drv.read_cb = read;
     _indev_drv.user_data = this;
+    _indev_drv.disp = lvglDispDriver->getLVDisp();
     /* Register the driver in LittlevGL and save the created input device object*/
     _my_indev = lv_indev_drv_register(&_indev_drv);
 }
