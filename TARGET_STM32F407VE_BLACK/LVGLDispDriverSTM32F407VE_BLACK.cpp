@@ -189,10 +189,8 @@ void LVGLDispSTM32F407VE_BLACK::init()
     lv_disp_draw_buf_init(&_disp_buf_1, _buf1_1, NULL, bufferSize);   /* Initialize the display buffer */
 
     /*Finally register the driver*/
+    _disp_drv.user_data = this;
     _disp = lv_disp_drv_register(&_disp_drv);
-
-	// workaround, default theme is not set when display is not 1st one
-	_disp->theme = lv_theme_default_init(_disp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), LV_THEME_DEFAULT_DARK, LV_FONT_DEFAULT);
 }
 
 void LVGLDispSTM32F407VE_BLACK::disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p)
