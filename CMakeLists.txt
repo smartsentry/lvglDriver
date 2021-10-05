@@ -8,6 +8,7 @@ target_sources(lvglDriver
     INTERFACE
       LVGLDispDriverBase.cpp
       LVGLDispDriver_GC9A01.cpp
+      LVGLDispDriver_ST7735.cpp
       LVGLInputDriverBase.cpp
       LVGLTouchDriverXPT2046.cpp
 )
