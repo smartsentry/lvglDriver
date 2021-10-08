@@ -27,6 +27,7 @@
 #define LV_HOR_RES_MAX          (320)
 #define LV_VER_RES_MAX          (240)
 #define USE_DMA                 (1)
+#define USE_DOUBLE_BUFFER       (1)
 
 /*
     use FSMC
@@ -147,7 +148,7 @@ static void fsmc_dma_init(void)
 
     /* DMA interrupt init */
     /* DMA2_Stream0_IRQn interrupt configuration */
-    HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 2, 0);
+    HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 2, 255);
     HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
 
     // register DMA-Callback
@@ -176,19 +177,24 @@ void LVGLDispSTM32F407VE_BLACK::init()
     size_t bufferSize = LV_HOR_RES_MAX * _nBufferRows;
 
     // allocate memory for display buffer
-    _buf1_1 = new lv_color_t[bufferSize];             /* a buffer for n rows */
-    MBED_ASSERT(_buf1_1 != nullptr);
-    memset(_buf1_1, 0, bufferSize*sizeof(lv_color_t));
+    _buf1 = new lv_color_t[bufferSize];             /* a buffer for n rows */
+    MBED_ASSERT(_buf1 != nullptr);
+    memset(_buf1, 0, bufferSize*sizeof(lv_color_t));
 
-    /*Used to copy the buffer's content to the display*/
+
+#if (USE_DOUBLE_BUFFER == 1)
+    _buf2 = new lv_color_t[bufferSize];             /* a buffer for n rows */
+    MBED_ASSERT(_buf2 != nullptr);
+    memset(_buf2, 0, bufferSize*sizeof(lv_color_t));
+
+    lv_disp_draw_buf_init(&_disp_draw_buf, _buf1, _buf2, bufferSize);   /* Initialize the display buffer */
+#else
+    lv_disp_draw_buf_init(&_disp_draw_buf, _buf1, nullptr, bufferSize);   /* Initialize the display buffer */
+#endif
+
+    /* register the driver*/
     _disp_drv.flush_cb = disp_flush;
-
-    /*Set a display buffer*/
-    _disp_drv.draw_buf = &_disp_buf_1;
-
-    lv_disp_draw_buf_init(&_disp_buf_1, _buf1_1, NULL, bufferSize);   /* Initialize the display buffer */
-
-    /*Finally register the driver*/
+    _disp_drv.draw_buf = &_disp_draw_buf;
     _disp_drv.user_data = this;
     _disp = lv_disp_drv_register(&_disp_drv);
 }
