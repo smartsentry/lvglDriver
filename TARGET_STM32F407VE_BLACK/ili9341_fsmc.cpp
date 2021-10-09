@@ -79,7 +79,7 @@ static void init_table(const uint8_t *table, int16_t size)
         uint8_t cmd = *table++;
         uint8_t len = *table++;
         if (cmd == TFTLCD_DELAY8) {
-            ThisThread::sleep_for(len);
+            ThisThread::sleep_for(Kernel::Clock::duration_u32 { len});
             len = 0;
         } else {
             WriteCmdParamN(cmd, len, table);
