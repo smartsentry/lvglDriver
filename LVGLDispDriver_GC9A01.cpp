@@ -329,15 +329,11 @@ void LVGLDispGC9A01::init()
     MBED_ASSERT(_buf1_1 != nullptr);
     memset(_buf1_1, 0, bufferSize*sizeof(lv_color_t));
 
-    /*Used to copy the buffer's content to the display*/
-    _disp_drv.flush_cb = disp_flush;
-
-    /*Set a display buffer*/
-    _disp_drv.draw_buf = &_disp_buf_1;
-
     lv_disp_draw_buf_init(&_disp_buf_1, _buf1_1, NULL, bufferSize);   /* Initialize the display buffer */
 
     /*Finally register the driver*/
+    _disp_drv.flush_cb = disp_flush;
+    _disp_drv.draw_buf = &_disp_buf_1;
     _disp_drv.user_data = this;
     _disp = lv_disp_drv_register(&_disp_drv);
 }
@@ -348,7 +344,7 @@ void LVGLDispGC9A01::disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, 
 
     instance->flush(area, color_p);
 
-    lv_disp_flush_ready(disp_drv);         /* Indicate you are ready with the flushing*/
+    // lv_disp_flush_ready(disp_drv);                 // called by async SPI transfer
 }
 
 void LVGLDispGC9A01::flush(const lv_area_t *area, lv_color_t *color_p)
@@ -360,9 +356,21 @@ void LVGLDispGC9A01::flush(const lv_area_t *area, lv_color_t *color_p)
 
   	_spi.format(16, 0);		// switch to 16 bit transfer for data
   	_cmd = 1;
-    int32_t len = (area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1); 	// in 16 bit words
-    _spi.write((const char*)color_p, len, nullptr, 0);						// transfer pixel data
+
+    // int32_t len = (area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1); 	// in 16 bit words
+    // _spi.write((const char*)color_p, len, nullptr, 0);						// transfer pixel data
+
+    int len = (area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1) * 2; 	// in bytes
+    [[maybe_unused]] volatile int rc = _spi.transfer((uint16_t*)color_p, len, (uint16_t*)nullptr,  0, callback(this, &LVGLDispGC9A01::flush_ready));
+
     _cs = 1;
+}
+
+void LVGLDispGC9A01::flush_ready(int event_flags)
+{
+    if (event_flags & SPI_EVENT_COMPLETE) {
+        lv_disp_flush_ready(&_disp_drv);         /* Indicate you are ready with the flushing*/
+    }
 }
 
 /**
