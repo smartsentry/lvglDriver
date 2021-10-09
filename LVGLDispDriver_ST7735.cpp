@@ -360,15 +360,11 @@ void LVGLDispST7735::init()
     MBED_ASSERT(_buf1_1 != nullptr);
     memset(_buf1_1, 0, bufferSize*sizeof(lv_color_t));
 
-    /*Used to copy the buffer's content to the display*/
-    _disp_drv.flush_cb = disp_flush;
-
-    /*Set a display buffer*/
-    _disp_drv.draw_buf = &_disp_buf_1;
-
     lv_disp_draw_buf_init(&_disp_buf_1, _buf1_1, NULL, bufferSize);   /* Initialize the display buffer */
 
     /*Finally register the driver*/
+    _disp_drv.flush_cb = disp_flush;
+    _disp_drv.draw_buf = &_disp_buf_1;
     _disp_drv.user_data = this;
     _disp = lv_disp_drv_register(&_disp_drv);
 }
@@ -380,7 +376,7 @@ void LVGLDispST7735::disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, 
 
     instance->flush(area, color_p);
 
-    //lv_disp_flush_ready(disp_drv);         /* Indicate you are ready with the flushing*/
+    //lv_disp_flush_ready(disp_drv);         // called by async SPI transfer
 }
 
 void LVGLDispST7735::flush(const lv_area_t *area, lv_color_t *color_p)
