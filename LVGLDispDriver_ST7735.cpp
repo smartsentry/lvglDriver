@@ -340,6 +340,8 @@ LVGLDispST7735::LVGLDispST7735(SPI &spi, PinName pinCS, PinName pinCMD, PinName 
     _nBufferRows(nBufferRows)
 {
     // low level hardware init
+  	_spi.format(8, 0);		// should be set already
+
   	initR(INITR_REDTAB);
     _cs = 0;
     setRotation(1);
@@ -371,13 +373,14 @@ void LVGLDispST7735::init()
     _disp = lv_disp_drv_register(&_disp_drv);
 }
 
+// static function, calling object method
 void LVGLDispST7735::disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p)
 {
     LVGLDispST7735* instance = (LVGLDispST7735*)disp_drv->user_data;
 
     instance->flush(area, color_p);
 
-    lv_disp_flush_ready(disp_drv);         /* Indicate you are ready with the flushing*/
+    //lv_disp_flush_ready(disp_drv);         /* Indicate you are ready with the flushing*/
 }
 
 void LVGLDispST7735::flush(const lv_area_t *area, lv_color_t *color_p)
@@ -389,9 +392,27 @@ void LVGLDispST7735::flush(const lv_area_t *area, lv_color_t *color_p)
 
   	_spi.format(16, 0);		// switch to 16 bit transfer for data
   	_cmd = 1;
-    int32_t len = (area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1); 	// in 16 bit words
-    _spi.write((const char*)color_p, len, nullptr, 0);						// transfer pixel data
+
+    // int len = (area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1); 	// in 16 bit words
+    // for (int i=0; i<len; i++) {
+    //     _spi.write(color_p->full);
+    //     color_p++;
+    // }
+    
+    // int len = (area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1); 	// in 16 bit words
+    // _spi.write((const char*)color_p, len, nullptr, 0);						// transfer pixel data
+    
+    int len = (area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1) * 2; 	// in bytes
+    [[maybe_unused]] volatile int rc = _spi.transfer((uint16_t*)color_p, len, (uint16_t*)nullptr,  0, callback(this, &LVGLDispST7735::flush_ready));
+    
     _cs = 1;
+}
+
+void LVGLDispST7735::flush_ready(int event_flags)
+{
+    if (event_flags & SPI_EVENT_COMPLETE) {
+        lv_disp_flush_ready(&_disp_drv);         /* Indicate you are ready with the flushing*/
+    }
 }
 
 /**
