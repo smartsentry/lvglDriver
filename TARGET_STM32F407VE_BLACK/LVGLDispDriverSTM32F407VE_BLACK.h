@@ -24,7 +24,7 @@
 #ifndef __LVGLDispDriverSTM32F407VE_BLACK_h__
 #define __LVGLDispDriverSTM32F407VE_BLACK_h__
 
-#include "LVGLDispDriverBase.h"
+#include "../LVGLDispDriverBase.h"
 
 class LVGLDispSTM32F407VE_BLACK : public LVGLDispDriver {
 public:
