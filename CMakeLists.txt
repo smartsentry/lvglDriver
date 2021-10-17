@@ -13,3 +13,8 @@ target_sources(lvglDriver
       TARGET_STM32F407VE_BLACK/LVGLDispDriverSTM32F407VE_BLACK.cpp
       TARGET_STM32F407VE_BLACK/LVGLTouchDriver_STM32F407VE_BLACK.cpp
 )
+
+target_link_libraries(lvglDriver
+    INTERFACE
+    lvgl_interface
+)
