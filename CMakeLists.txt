@@ -16,5 +16,5 @@ target_sources(lvglDriver
 
 target_link_libraries(lvglDriver
     INTERFACE
-    lvgl_interface
+    lvgl
 )
