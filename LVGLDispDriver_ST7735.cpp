@@ -400,13 +400,12 @@ void LVGLDispST7735::flush(const lv_area_t *area, lv_color_t *color_p)
     
     int len = (area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1) * 2; 	// in bytes
     [[maybe_unused]] volatile int rc = _spi.transfer((uint16_t*)color_p, len, (uint16_t*)nullptr,  0, callback(this, &LVGLDispST7735::flush_ready));
-    
-    _cs = 1;
 }
 
 void LVGLDispST7735::flush_ready(int event_flags)
 {
     if (event_flags & SPI_EVENT_COMPLETE) {
+        _cs = 1;
         lv_disp_flush_ready(&_disp_drv);         /* Indicate you are ready with the flushing*/
     }
 }
@@ -542,13 +541,7 @@ void LVGLDispST7735::commonInit(const uint8_t *cmdList)
     _cmd = 1;
     _cs = 1;
 
-    // toggle RST low to reset
-    _rst = 1;
-    wait_us(5*1000);
-    _rst = 0;
-    wait_us(5*1000);
-    _rst = 1;
-    wait_us(5*1000);
+    hard_reset();
 
     if(cmdList) commandList(cmdList);
 }
