@@ -22,7 +22,7 @@
  */
 
 #include "LVGLDispDriver_DISCO_F769NI.h"
-#include "systool.h"
+// #include "systool.h"
 
 #define LV_HOR_RES_MAX          (800)
 #define LV_VER_RES_MAX          (480)
@@ -77,7 +77,7 @@ void LVGLDispDISCO_F769NI::init()
 
     MBED_ASSERT(xbuf1 != nullptr);
     memset(xbuf1, 0, bufferSize*sizeof(lv_color_t));
-    debug("init display, using heap buffer, addr: %p  %s\n", xbuf1, get_RAM_name(xbuf1));
+    // debug("init display, using heap buffer, addr: %p  %s\n", xbuf1, get_RAM_name(xbuf1));
 #  if   (USE_DOUBLE_BUFFER == 1)
     // lv_color_t* xbuf2 = new lv_color_t[bufferSize];          // buffer on heap
     // lv_color_t* xbuf2 = (lv_color_t*)0x20010400;             // buffer in DTCM
@@ -85,12 +85,12 @@ void LVGLDispDISCO_F769NI::init()
 
     MBED_ASSERT(xbuf2 != nullptr);
     memset(xbuf2, 0, bufferSize*sizeof(lv_color_t));
-    debug("init display, using double buffer, addr: %p  %s\n", xbuf2, get_RAM_name(xbuf2));
+    // debug("init display, using double buffer, addr: %p  %s\n", xbuf2, get_RAM_name(xbuf2));
 #  endif
 #else
-    debug("init display, using static buffer, addr: %p  %s\n", xbuf1, get_RAM_name(xbuf1));
+    // debug("init display, using static buffer, addr: %p  %s\n", xbuf1, get_RAM_name(xbuf1));
 #  if   (USE_DOUBLE_BUFFER == 1)
-    debug("init display, using double buffer, addr: %p  %s\n", xbuf2, get_RAM_name(xbuf2));
+    // debug("init display, using double buffer, addr: %p  %s\n", xbuf2, get_RAM_name(xbuf2));
 #  endif
 #endif
 
