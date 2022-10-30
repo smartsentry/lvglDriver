@@ -19,6 +19,14 @@ if("STM32F407VE_BLACK" IN_LIST MBED_TARGET_LABELS)
     )
 endif()
 
+if("DISCO_F769NI" IN_LIST MBED_TARGET_LABELS)
+    target_link_libraries(lvglDriver INTERFACE bsp)
+    list(APPEND SOURCEFILES
+        TARGET_DISCO_F769NI/LVGLDispDriver_DISCO_F769NI.cpp
+        TARGET_DISCO_F769NI/LVGLTouchDriverDISCO_F769NI.cpp
+    )
+endif()
+
 
 target_sources(lvglDriver
     INTERFACE
