@@ -71,17 +71,17 @@ void LVGLDispDISCO_F769NI::init()
 
 #if (USE_STATIC_BUFFER == 0)
     // allocate memory for display buffer
-    // lv_color_t* xbuf1 = new lv_color_t[bufferSize];          // buffer on heap
+    lv_color_t* xbuf1 = new lv_color_t[bufferSize];          // buffer on heap
     // lv_color_t* xbuf1 = (lv_color_t*)0x20000800;             // buffer in DTCM
-    lv_color_t* xbuf1 = (lv_color_t*)0x20060000;             // buffer in SRAM1
+    //lv_color_t* xbuf1 = (lv_color_t*)0x20060000;             // buffer in SRAM1
 
     MBED_ASSERT(xbuf1 != nullptr);
     memset(xbuf1, 0, bufferSize*sizeof(lv_color_t));
     // debug("init display, using heap buffer, addr: %p  %s\n", xbuf1, get_RAM_name(xbuf1));
 #  if   (USE_DOUBLE_BUFFER == 1)
-    // lv_color_t* xbuf2 = new lv_color_t[bufferSize];          // buffer on heap
+    lv_color_t* xbuf2 = new lv_color_t[bufferSize];          // buffer on heap
     // lv_color_t* xbuf2 = (lv_color_t*)0x20010400;             // buffer in DTCM
-    lv_color_t* xbuf2 = (lv_color_t*)0x20070000;             // buffer in SRAM1
+    //lv_color_t* xbuf2 = (lv_color_t*)0x20070000;             // buffer in SRAM1
 
     MBED_ASSERT(xbuf2 != nullptr);
     memset(xbuf2, 0, bufferSize*sizeof(lv_color_t));
