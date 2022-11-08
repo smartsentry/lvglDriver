@@ -22,7 +22,7 @@
  */
 
 #include "LVGLDispDriver_DISCO_F746NG.h"
-#include "systool.h"
+// #include "systool.h"
 
 #define LV_HOR_RES_MAX          (480)
 #define LV_VER_RES_MAX          (272)
@@ -67,7 +67,7 @@ void LVGLDispDISCO_F746NG::init()
     MBED_ASSERT(xbuf1 != nullptr);
     memset(xbuf1, 0, bufferSize*sizeof(lv_color_t));
 
-    debug("init display, using heap buffer, addr: %p  %s\n", xbuf1, get_RAM_name(xbuf1));
+    // debug("init display, using heap buffer, addr: %p  %s\n", xbuf1, get_RAM_name(xbuf1));
 #else
     debug("init display, using static buffer, addr: %p  %s\n", xbuf1, get_RAM_name(xbuf1));
 #endif
@@ -76,9 +76,9 @@ void LVGLDispDISCO_F746NG::init()
     _disp_drv.flush_cb = disp_flush;
 
     /*Set a display buffer*/
-    _disp_drv.buffer = &_disp_buf_1;
+    _disp_drv.draw_buf = &_disp_buf_1;
 
-    lv_disp_buf_init(&_disp_buf_1, xbuf1, NULL, bufferSize);   /* Initialize the display buffer */
+    lv_disp_draw_buf_init(&_disp_buf_1, xbuf1, NULL, bufferSize);   /* Initialize the display buffer */
 
     /*Finally register the driver*/
     _disp = lv_disp_drv_register(&_disp_drv);
@@ -121,8 +121,6 @@ void LVGLDispDISCO_F746NG::disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *
 
 MBED_WEAK LVGLDispDriver *LVGLDispDriver::get_target_default_instance()
 {
-    // LVGLDispDISCO_F746NG* drv = new LVGLDispDISCO_F746NG(BUFFERLINES);
-    // return drv;
     static LVGLDispDISCO_F746NG drv(BUFFERLINES);
     return &drv;
 }

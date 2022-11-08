@@ -27,6 +27,14 @@ if("DISCO_F769NI" IN_LIST MBED_TARGET_LABELS)
     )
 endif()
 
+if("DISCO_F746NG" IN_LIST MBED_TARGET_LABELS)
+    target_link_libraries(lvglDriver INTERFACE bsp)
+    list(APPEND SOURCEFILES
+        TARGET_DISCO_F746NG/LVGLDispDriver_DISCO_F746NG.cpp
+        TARGET_DISCO_F746NG/LVGLTouchDriverDISCO_F746NG.cpp
+    )
+endif()
+
 
 target_sources(lvglDriver
     INTERFACE

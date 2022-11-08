@@ -42,7 +42,7 @@ LVGLTouchDriverDISCO_F746NG::LVGLTouchDriverDISCO_F746NG(LVGLDispDriver *lvglDis
     _my_indev = lv_indev_drv_register(&_indev_drv);
 }
 
-bool LVGLTouchDriverDISCO_F746NG::read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
+void LVGLTouchDriverDISCO_F746NG::read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 {
     TS_StateTypeDef TS_State;
 
@@ -56,8 +56,6 @@ bool LVGLTouchDriverDISCO_F746NG::read(lv_indev_drv_t * indev_drv, lv_indev_data
 
     data->point.x = TS_State.touchX[0];
     data->point.y = TS_State.touchY[0];
-
-    return false;
 }
 
 MBED_WEAK LVGLInputDriver *LVGLInputDriver::get_target_default_instance_touchdrv(LVGLDispDriver *disp)

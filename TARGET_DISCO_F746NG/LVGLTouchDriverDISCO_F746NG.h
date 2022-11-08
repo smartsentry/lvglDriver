@@ -35,7 +35,7 @@ public:
 
 private:
 
-    static bool read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
+    static void read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
 };
 
 #endif
