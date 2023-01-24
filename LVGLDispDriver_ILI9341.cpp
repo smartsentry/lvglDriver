@@ -184,6 +184,9 @@ static const uint8_t wake_on[] = {
     //ILI9341_IFMODE,     1, 0x40             //RGB Signal [40] RCM=2
 };
 
+static lv_color_t framebuffer[240*16] __attribute__((section(".ram_ccm")));
+// extern uint32_t __ram_ccm_start__;
+
 LVGLDispILI9341::LVGLDispILI9341(SPI &spi, PinName pinCS, PinName pinCMD, PinName pinRST, PinName pinBacklight, 
                                uint32_t nBufferRows, uint32_t resolutionX, uint32_t resolutionY) :
     LVGLDispDriver(resolutionX, resolutionY),
@@ -203,12 +206,15 @@ LVGLDispILI9341::LVGLDispILI9341(SPI &spi, PinName pinCS, PinName pinCMD, PinNam
 
 void LVGLDispILI9341::init()
 {
-    size_t bufferSize = _horRes * _nBufferRows;
+    size_t bufferSize = _horRes * 16; //_nBufferRows;
 
     // allocate memory for display buffer
-    _buf1_1 = new lv_color_t[bufferSize];             /* a buffer for n rows */
-    MBED_ASSERT(_buf1_1 != nullptr);
-    memset(_buf1_1, 0, bufferSize*sizeof(lv_color_t));
+    // _buf1_1 = new lv_color_t[bufferSize];             /* a buffer for n rows */
+    // MBED_ASSERT(_buf1_1 != nullptr);
+    // memset(_buf1_1, 0, bufferSize*sizeof(lv_color_t));
+    // _buf1_1 = (lv_color_t*)&__ram_ccm_start__;
+    _buf1_1 = framebuffer;
+    
 
     lv_disp_draw_buf_init(&_disp_buf_1, _buf1_1, NULL, bufferSize);   /* Initialize the display buffer */
 
@@ -339,7 +345,7 @@ int LVGLDispILI9341::tft_init()
     // write_table(ILI9341_regValues_ada, sizeof(ILI9341_regValues_ada));   //can change PIXFMT
     // write_table(ILI9341_regValues_post, sizeof(ILI9341_regValues_post));
     write_table(wake_on, sizeof(wake_on));
-    setRotation(1);
+    setRotation(2);
     _cs = 1;
 
     _backlight =1;
