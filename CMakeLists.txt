@@ -9,6 +9,7 @@ list(APPEND SOURCEFILES
     LVGLDispDriver_ILI9341.cpp
     LVGLInputDriverBase.cpp
     LVGLTouchDriverXPT2046.cpp
+    KD024QVRMA041.cpp
 )
 
 if("STM32F407VE_BLACK" IN_LIST MBED_TARGET_LABELS)

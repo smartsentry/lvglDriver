@@ -48,13 +48,13 @@ public:
     */
     static LVGLDispDriver *get_target_default_instance();
 
+    virtual void init() {};
 
 protected:
     LVGLDispDriver(uint32_t horRes, uint32_t verRes);
     uint32_t    _horRes;
     uint32_t    _verRes;
 
-    virtual void init() {};
 
     lv_disp_drv_t _disp_drv;
     lv_disp_t   *_disp;
