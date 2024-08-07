@@ -31,7 +31,7 @@ class LVGLDispDriver {
 public:
     LVGLDispDriver();
     lv_disp_t* getLVDisp() { return _disp; };
-    lv_disp_drv_t* getLVDispDrv() { return &_disp_drv; };
+    //lv_disp_drv_t* getLVDispDrv() { return &_disp_drv; };
 
     uint32_t getHorRes() { return _horRes; };
     uint32_t getVerRes() { return _verRes; };
@@ -56,8 +56,7 @@ protected:
     uint32_t    _verRes;
 
 
-    lv_disp_drv_t _disp_drv;
-    lv_disp_t   *_disp;
+    lv_display_t   *_disp;
 };
 
 #endif

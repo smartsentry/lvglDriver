@@ -21,7 +21,7 @@
  */
 
 #include "LVGLDispDriverBase.h"
-#include "LVGLInputDriverBase.h"
+//#include "LVGLInputDriverBase.h"
 
 LVGLDispDriver::LVGLDispDriver(uint32_t horRes, uint32_t verRes)
 {
@@ -33,11 +33,9 @@ LVGLDispDriver::LVGLDispDriver(uint32_t horRes, uint32_t verRes)
     /* TODO: call only once in the first instance of a driver */
     lv_init();
 
-    lv_disp_drv_init(&_disp_drv);                    /*Basic initialization*/
+    //lv_disp_drv_init(&_disp_drv);                    /*Basic initialization*/
 
-    /*Set the resolution of the display*/
-    _disp_drv.hor_res = horRes;
-    _disp_drv.ver_res = verRes;
+
 }
 
 #if 0

@@ -24,6 +24,8 @@
 #pragma once
 
 #include "LVGLDispDriverBase.h"
+#include "lvgl.h"
+
 
 
 
@@ -152,14 +154,14 @@ protected:
 
     uint32_t _nBufferRows;
     void init();
-    static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p);
-    void flush(const lv_area_t * area, lv_color_t * color_p);
+    static void disp_flush( lv_display_t *disp, const lv_area_t *area, uint8_t * px_map);
+    void flush(const lv_area_t * area, uint8_t * px_map);
     void flush_ready(int event_flags);
 
     void controllerInit();
 
-    lv_disp_draw_buf_t _disp_buf_1;
-    lv_color_t *_buf1_1;     // display working buffer
+    uint16_t *_buf1_1;     // display working buffer 1
+    uint16_t *_buf2_1;     // display working buffer 2
 
     void command(uint8_t cmd);
     void data(uint8_t data);
@@ -183,13 +185,14 @@ protected:
         ILI9341_PWCTRL2,     1,  0x11,
         ILI9341_VMCTRL1,    2, 0x35, 0x3E,
         ILI9341_VMCTRL2,    1, 0xBE,
-        ILI9341_MADCTL,     1, 0x68,//disp rotation
+        ILI9341_MADCTL,     1, 0x60,//disp rotation
         ILI9341_PIXSET,     1, 0x55,            //Pixel read=565, write=565.
         ILI9341_FRMCTR1,    2, 0x00, 0x1B,
         ILI9341_GAM3CTRL,   1, 0x08,
         ILI9341_GAMSET,     1, 0x01,
         ILI9341_PGAMCTRL,   14, 0xF0, 0x03, 0x07, 0x0B, 0x09, 0x06, 0x21, 0x54, 0x31, 0x36, 0x0E, 0x10, 0x10, 0x1A,
         ILI9341_NGAMCTRL,   14, 0xF0, 0x01, 0x04, 0x07, 0x06, 0x04, 0x20, 0x44, 0x31, 0x33, 0x06, 0x07, 0x09, 0x11,
+        ILI9341_DINVON,     0,
         //Tearing?
         ILI9341_ETMOD,      1, 0x07,
         ILI9341_DISCTRL,    4, 0x0A, 0x82, 0x27, 0x00,
