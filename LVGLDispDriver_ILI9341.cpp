@@ -94,32 +94,7 @@ void LVGLDispILI9341::init()
     lv_display_set_flush_cb(_disp, disp_flush);
     lv_display_set_buffers(_disp, _buf1_1, _buf2_1, bufferSize*2, LV_DISP_RENDER_MODE_PARTIAL);
     lv_display_set_user_data(_disp, this);
-    // lv_disp_draw_buf_init(&_disp_buf_1, _buf1_1, NULL, bufferSize);   /* Initialize the display buffer */
 
-    // /*Finally register the driver*/
-    // _disp_drv.flush_cb = disp_flush;
-    // _disp_drv.draw_buf = &_disp_buf_1;
-    // _disp_drv.user_data = this;
-    // _disp = lv_disp_drv_register(&_disp_drv);
-
-
-//     size_t bufferSize = _horRes * 16; //_nBufferRows;
-
-//     //allocate memory for display buffer
-//     _buf1_1 = new lv_color_t[bufferSize];             /* a buffer for n rows */
-//     MBED_ASSERT(_buf1_1 != nullptr);
-//     memset(_buf1_1, 0, bufferSize*sizeof(lv_color_t));
-//     _buf1_1 = (lv_color_t*)&__ram_ccm_start__;
-//    // _buf1_1 = framebuffer;
-    
-
-//     lv_disp_draw_buf_init(&_disp_buf_1, _buf1_1, NULL, bufferSize);   /* Initialize the display buffer */
-
-//     /*Finally register the driver*/
-//     _disp_drv.flush_cb = disp_flush;
-//     _disp_drv.draw_buf = &_disp_buf_1;
-//     _disp_drv.user_data = this;
-//     _disp = lv_disp_drv_register(&_disp_drv);
 }
 
 void LVGLDispILI9341::disp_flush( lv_display_t *disp, const lv_area_t *area, uint8_t * px_map)
@@ -127,27 +102,22 @@ void LVGLDispILI9341::disp_flush( lv_display_t *disp, const lv_area_t *area, uin
     LVGLDispILI9341* instance = (LVGLDispILI9341*)lv_display_get_user_data(disp);
     instance->flush(area, px_map);
 
-    // lv_disp_flush_ready(disp_drv);                 // called by async SPI transfer
 }
 
 void LVGLDispILI9341::flush(const lv_area_t *area, uint8_t * px_map)
 {
   	//_spi.format(8, 0);		// switch to 8 bit transfer for commands
 
-    //_cs = 0;
     set_addr_win(area->x1, area->y1, area->x2, area->y2);  	// set display area
 
   	//_spi.format(16, 0);		// switch to 16 bit transfer for data
-  	//_cmd = 1;
+
     _spi.set_dma_usage(DMA_USAGE_ALWAYS);
 
-    // int32_t len = (area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1); 	// in 16 bit words
-    // _spi.write((const char*)color_p, len, nullptr, 0);						// transfer pixel data
-
-    int len = (area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1) *2; 	// in bytes
-    lv_draw_sw_rgb565_swap(px_map,len/2);
-
-    [[maybe_unused]] volatile int rc = _spi.transfer(px_map, len, nullptr,  0, callback(this, &LVGLDispILI9341::flush_ready));
+    int pixels = lv_area_get_size(area); 	// in bytes
+    lv_draw_sw_rgb565_swap(px_map,pixels);
+//test 16  bit... try cast
+    [[maybe_unused]] volatile int rc = _spi.transfer(px_map, pixels * 2, nullptr,  0, callback(this, &LVGLDispILI9341::flush_ready));
 }
 
 void LVGLDispILI9341::flush_ready(int event_flags)
@@ -201,7 +171,7 @@ void LVGLDispILI9341::write_table(const uint8_t *table, int16_t size)
         uint8_t cmd = *table++;
         uint8_t len = *table++;
         if (cmd == TFTLCD_DELAY8) {
-            wait_us(len * 1000);  // ThisThread::sleep_for(Kernel::Clock::duration_u32 {len});
+            ThisThread::sleep_for(1ms *len);
             len = 0;
         } else {
             int n = len;
