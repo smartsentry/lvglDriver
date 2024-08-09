@@ -110,14 +110,23 @@ void LVGLDispILI9341::flush(const lv_area_t *area, uint8_t * px_map)
 
     set_addr_win(area->x1, area->y1, area->x2, area->y2);  	// set display area
 
-  	//_spi.format(16, 0);		// switch to 16 bit transfer for data
-
-    _spi.set_dma_usage(DMA_USAGE_ALWAYS);
-
     int pixels = lv_area_get_size(area); 	// in bytes
+
+//As 16 bit transfer
+  	// _spi.format(16, 0);		// switch to 16 bit transfer for data
+    // [[maybe_unused]] volatile int rc = _spi.transfer((uint16_t *)px_map, pixels*2 , nullptr,  0, callback(this, &LVGLDispILI9341::flush_ready));
+
+//As 16 bit DMA transfer
+    // _spi.set_dma_usage(DMA_USAGE_ALWAYS);
+  	// _spi.format(16, 0);		// switch to 16 bit transfer for data
+    // [[maybe_unused]] volatile int rc = _spi.transfer((uint16_t *)px_map, pixels*2 , nullptr,  0, callback(this, &LVGLDispILI9341::flush_ready));
+
+//As 8 bit DMA transfer
+    _spi.set_dma_usage(DMA_USAGE_ALWAYS);
     lv_draw_sw_rgb565_swap(px_map,pixels);
-//test 16  bit... try cast
-    [[maybe_unused]] volatile int rc = _spi.transfer(px_map, pixels * 2, nullptr,  0, callback(this, &LVGLDispILI9341::flush_ready));
+    [[maybe_unused]] volatile int rc = _spi.transfer(px_map, pixels*2 , nullptr,  0, callback(this, &LVGLDispILI9341::flush_ready));
+
+
 }
 
 void LVGLDispILI9341::flush_ready(int event_flags)
@@ -134,6 +143,7 @@ void LVGLDispILI9341::flush_ready(int event_flags)
  */
 void LVGLDispILI9341::command(uint8_t cmd)
 {
+    _spi.format(8, 0);		// switch back to 8 bit transfer
     _cs = 0;
 	_cmd = 0;
     _spi.write(cmd);
