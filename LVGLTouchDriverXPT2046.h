@@ -44,7 +44,7 @@ private:
     int16_t avg_buf_y[XPT2046_AVG];
     uint8_t avg_last;
 
-    static void read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
+    static void read(lv_indev_t * indev, lv_indev_data_t * data);
     void corr(int16_t * x, int16_t * y);
     void avg(int16_t * x, int16_t * y);
 };

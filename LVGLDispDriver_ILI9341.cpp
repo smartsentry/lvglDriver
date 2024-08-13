@@ -134,6 +134,7 @@ void LVGLDispILI9341::flush_ready(int event_flags)
     if (event_flags & SPI_EVENT_COMPLETE) {
         _cs = 1;
         lv_disp_flush_ready(_disp);         /* Indicate you are ready with the flushing*/
+        //look at lv_display_set_flush_wait_cb?`
     }
 }
 

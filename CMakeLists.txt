@@ -7,8 +7,8 @@ list(APPEND SOURCEFILES
     #LVGLDispDriver_GC9A01.cpp
     #LVGLDispDriver_ST7735.cpp
     LVGLDispDriver_ILI9341.cpp
-    #LVGLInputDriverBase.cpp
-    #LVGLTouchDriverXPT2046.cpp
+    LVGLInputDriverBase.cpp
+    LVGLTouchDriverXPT2046.cpp
     KD024QVRMA041.cpp
 )
 

@@ -24,7 +24,8 @@
 
 LVGLInputDriver::LVGLInputDriver(LVGLDispDriver* disp) 
 {
-    lv_indev_drv_init(&_indev_drv);         // Basic initialization
+    //lv_indev_drv_init(&_indev_drv);         // Basic initialization
+    _indev = lv_indev_create();
     _lvglDispDriverBase = disp;                 // attach display, null is allowed for default display
 }
 
