@@ -44,7 +44,8 @@ public:
      * definition is weak, and calls get_target_default_instance().
     */
     static LVGLInputDriver *get_target_default_instance_touchdrv(LVGLDispDriver *disp = nullptr);
-
+    
+    lv_indev_t* getLVInDev() { return _indev; };
 
 protected:
     LVGLInputDriver(LVGLDispDriver *disp = nullptr);
