@@ -117,14 +117,14 @@ void LVGLDispILI9341::flush(const lv_area_t *area, uint8_t * px_map)
     // [[maybe_unused]] volatile int rc = _spi.transfer((uint16_t *)px_map, pixels*2 , nullptr,  0, callback(this, &LVGLDispILI9341::flush_ready));
 
 //As 16 bit DMA transfer
-    // _spi.set_dma_usage(DMA_USAGE_ALWAYS);
-  	// _spi.format(16, 0);		// switch to 16 bit transfer for data
-    // [[maybe_unused]] volatile int rc = _spi.transfer((uint16_t *)px_map, pixels*2 , nullptr,  0, callback(this, &LVGLDispILI9341::flush_ready));
+    _spi.set_dma_usage(DMA_USAGE_ALWAYS);
+  	_spi.format(16, 0);		// switch to 16 bit transfer for data
+    [[maybe_unused]] volatile int rc = _spi.transfer((uint16_t *)px_map, pixels*2 , nullptr,  0, callback(this, &LVGLDispILI9341::flush_ready));
 
 //As 8 bit DMA transfer
-    _spi.set_dma_usage(DMA_USAGE_ALWAYS);
-    lv_draw_sw_rgb565_swap(px_map,pixels);
-    [[maybe_unused]] volatile int rc = _spi.transfer(px_map, pixels*2 , nullptr,  0, callback(this, &LVGLDispILI9341::flush_ready));
+    // _spi.set_dma_usage(DMA_USAGE_ALWAYS);
+    // lv_draw_sw_rgb565_swap(px_map,pixels);
+    // [[maybe_unused]] volatile int rc = _spi.transfer(px_map, pixels*2 , nullptr,  0, callback(this, &LVGLDispILI9341::flush_ready));
 
 
 }
