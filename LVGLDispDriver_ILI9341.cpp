@@ -60,11 +60,10 @@
     // ILI9341_NGAMCTRL,   15, 0x00, 0x25, 0x27, 0x05, 0x10, 0x09, 0x3A, 0x78, 0x4D, 0x05, 0x18, 0x0D, 0x38, 0x3A, 0x1F,
     // ILI9341_PGAMCTRL,   14, 0xF0, 0x03, 0x07, 0x0B, 0x09, 0x06, 0x21, 0x54, 0x31, 0x36, 0x0E, 0x10, 0x10, 0x1A,
     // ILI9341_NGAMCTRL,   14, 0xF0, 0x01, 0x04, 0x07, 0x06, 0x04, 0x20, 0x44, 0x31, 0x33, 0x06, 0x07, 0x09, 0x11,
-LVGLDispILI9341::LVGLDispILI9341(SPI &spi, PinName pinCS, PinName pinCMD, PinName pinRST, PinName pinBacklight, 
+LVGLDispILI9341::LVGLDispILI9341(SPI &spi, PinName pinCMD, PinName pinRST, PinName pinBacklight, 
                                uint32_t nBufferRows, uint32_t resolutionX, uint32_t resolutionY) :
     LVGLDispDriver(resolutionX, resolutionY),
     _spi(spi),
-    _cs(pinCS),
     _cmd(pinCMD),
     _rst(pinRST),
     _backlight(pinBacklight),
@@ -108,7 +107,7 @@ void LVGLDispILI9341::flush(const lv_area_t *area, uint8_t * px_map)
 {
   	//_spi.format(8, 0);		// switch to 8 bit transfer for commands
 
-    set_addr_win(area->x1, area->y1, area->x2, area->y2);  	// set display area
+    set_addr_win(area->x1, area->y1, area->x2, area->y2);  	// set display area will leave CS low
 
     int pixels = lv_area_get_size(area); 	// in bytes
 
@@ -120,6 +119,7 @@ void LVGLDispILI9341::flush(const lv_area_t *area, uint8_t * px_map)
     _spi.set_dma_usage(DMA_USAGE_ALWAYS);
   	_spi.format(16, 0);		// switch to 16 bit transfer for data
     [[maybe_unused]] volatile int rc = _spi.transfer((uint16_t *)px_map, pixels*2 , nullptr,  0, callback(this, &LVGLDispILI9341::flush_ready));
+    _spi.deselect();//hopefully the transfer will now have a lock since we cant deselect in the flush as it's an ISR
 
 //As 8 bit DMA transfer
     // _spi.set_dma_usage(DMA_USAGE_ALWAYS);
@@ -132,7 +132,8 @@ void LVGLDispILI9341::flush(const lv_area_t *area, uint8_t * px_map)
 void LVGLDispILI9341::flush_ready(int event_flags)
 {
     if (event_flags & SPI_EVENT_COMPLETE) {
-        _cs = 1;
+        //_spi.deselect();
+
         lv_disp_flush_ready(_disp);         /* Indicate you are ready with the flushing*/
         //look at lv_display_set_flush_wait_cb?`
     }
@@ -145,7 +146,7 @@ void LVGLDispILI9341::flush_ready(int event_flags)
 void LVGLDispILI9341::command(uint8_t cmd)
 {
     _spi.format(8, 0);		// switch back to 8 bit transfer
-    _cs = 0;
+    _spi.select();
 	_cmd = 0;
     _spi.write(cmd);
     _cmd = 1;
@@ -191,7 +192,7 @@ void LVGLDispILI9341::write_table(const uint8_t *table, int16_t size)
             while (n-- > 0) {
                 data(*table++);
             }
-            _cs = 1;
+            _spi.deselect();
         }
         size -= len + 2;
     }
@@ -229,14 +230,14 @@ void LVGLDispILI9341::set_addr_win(uint16_t x0, uint16_t y0, uint16_t x1, uint16
     data(x0);     // XSTART 
     data(x1 >> 8);
     data(x1);     // XEND
-    _cs = 1;
+    _spi.deselect();
     
     command(ILI9341_PASET); // Row addr set
     data(y0 >> 8);
     data(y0);     // YSTART
     data(y1 >> 8);
     data(y1);     // YEND
-    _cs = 1;
+    _spi.deselect();
 
     command(ILI9341_RAMWR);
 }

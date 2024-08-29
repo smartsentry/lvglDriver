@@ -143,11 +143,10 @@
 
 class LVGLDispILI9341 : public LVGLDispDriver {
 public:
-    LVGLDispILI9341(SPI &spi, PinName pinCS, PinName pinCMD, PinName pinRST, PinName pinBacklight, uint32_t nBufferRows = 20, uint32_t resolutionX = 320, uint32_t resolutionY = 240);
+    LVGLDispILI9341(SPI &spi, PinName pinCMD, PinName pinRST, PinName pinBacklight, uint32_t nBufferRows = 20, uint32_t resolutionX = 320, uint32_t resolutionY = 240);
 
 protected:
     SPI &_spi;
-    DigitalOut _cs;
     DigitalOut _cmd;
     DigitalOut _rst;
     DigitalOut _backlight;
