@@ -248,7 +248,12 @@ int LVGLDispILI9341::tft_init()
     write_table(init_cmd_list, sizeof(init_cmd_list));
     //setRotation(2);
 
-    _backlight =1;
+   // _backlight =1;
 	
 	return 0;
 }
+
+    void LVGLDispILI9341::backlightEnable(bool enable)
+    {
+        _backlight =enable;
+    }
