@@ -76,6 +76,25 @@ LVGLDispILI9341::LVGLDispILI9341(SPI &spi, PinName pinCMD, PinName pinRST, PinNa
     init();
 }
 
+// void LVGLDispILI9341::init()
+// {
+
+//  size_t bufferSize = _horRes * _nBufferRows;
+
+//     // allocate memory for display buffer 1
+//     _buf1_1 = new uint16_t[bufferSize];             /* a buffer for n rows */
+//     MBED_ASSERT(_buf1_1 != nullptr);
+
+//     // allocate memory for display buffer 2
+//     _buf2_1 = new uint16_t[bufferSize];             /* a buffer for n rows */
+//     MBED_ASSERT(_buf2_1 != nullptr);
+
+//     _disp = lv_display_create(_horRes, _verRes);
+//     lv_display_set_flush_cb(_disp, disp_flush);
+//     lv_display_set_buffers(_disp, _buf1_1, _buf2_1, bufferSize*2, LV_DISP_RENDER_MODE_PARTIAL);
+//     lv_display_set_user_data(_disp, this);
+
+// }
 void LVGLDispILI9341::init()
 {
 
@@ -86,12 +105,12 @@ void LVGLDispILI9341::init()
     MBED_ASSERT(_buf1_1 != nullptr);
 
     // allocate memory for display buffer 2
-    _buf2_1 = new uint16_t[bufferSize];             /* a buffer for n rows */
-    MBED_ASSERT(_buf2_1 != nullptr);
+    //_buf2_1 = new uint16_t[bufferSize];             /* a buffer for n rows */
+    //MBED_ASSERT(_buf2_1 != nullptr);
 
     _disp = lv_display_create(_horRes, _verRes);
     lv_display_set_flush_cb(_disp, disp_flush);
-    lv_display_set_buffers(_disp, _buf1_1, _buf2_1, bufferSize*2, LV_DISP_RENDER_MODE_PARTIAL);
+    lv_display_set_buffers(_disp, _buf1_1, nullptr, bufferSize*2, LV_DISP_RENDER_MODE_PARTIAL);
     lv_display_set_user_data(_disp, this);
 
 }
