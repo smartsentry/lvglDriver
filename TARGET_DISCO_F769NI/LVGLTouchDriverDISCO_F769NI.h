@@ -25,17 +25,20 @@
 
 #include "LVGLInputDriverBase.h"
 
+
 class LVGLTouchDriverDISCO_F769NI : public LVGLInputDriver {
 public:
     /*
         construct touch driver from SPI pins
         Disp is optional, if null then lvgl will use default display
     */
-    LVGLTouchDriverDISCO_F769NI(LVGLDispDriver *lvglDispDriver = nullptr);
+    LVGLTouchDriverDISCO_F769NI(PinName intPin, EventQueue *queue, LVGLDispDriver *lvglDispDriver = nullptr);
 
 private:
-
-    static void read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
+    InterruptIn tsInt; // Touchscreen interrupt pin
+    static void read_cb(lv_indev_t * indev, lv_indev_data_t * data);
+    void touchPress();
+    EventQueue *_queue;
 };
 
 #endif

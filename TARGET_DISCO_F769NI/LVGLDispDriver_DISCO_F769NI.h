@@ -27,21 +27,21 @@
 #include "LVGLDispDriverBase.h"
 #include "LCD_DISCO_F769NI.h"
 
+extern LTDC_HandleTypeDef hLtdcHandler;
+
+
 class LVGLDispDISCO_F769NI : public LVGLDispDriver {
 public:
-    LVGLDispDISCO_F769NI(uint32_t nBufferRows = 10);
+    LVGLDispDISCO_F769NI(uint32_t nBufferRows = 20);
+    LCD_DISCO_F769NI _lcd;
 
 private:
-    LCD_DISCO_F769NI _lcd;
 
     uint32_t _nBufferRows;
     void init();
-    static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p);
+    static void disp_flush(lv_display_t * disp, const lv_area_t * area, uint8_t *px_map);
 
     void controllerInit();
-
-    lv_disp_draw_buf_t _disp_buf_1;
-    lv_color_t *_buf1_1;     // display working buffer
 };
 
 #endif

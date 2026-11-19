@@ -30,19 +30,21 @@ TS_DISCO_F769NI ts;
  *      DEFINES
  *********************/
 
-LVGLTouchDriverDISCO_F769NI::LVGLTouchDriverDISCO_F769NI(LVGLDispDriver *lvglDispDriver) :
-    LVGLInputDriver(lvglDispDriver)
+LVGLTouchDriverDISCO_F769NI::LVGLTouchDriverDISCO_F769NI(PinName intPin, EventQueue *queue, LVGLDispDriver *lvglDispDriver) :
+    LVGLInputDriver(lvglDispDriver),tsInt(intPin)
 {
-    ts.Init(800, 472);
+    ts.Init(800, 480); // Initialize the touchscreen with the display resolution
+    _queue = queue; // Store the event queue for later use
+    lv_indev_set_type(_indev, LV_INDEV_TYPE_POINTER);
+    lv_indev_set_read_cb(_indev, read_cb);
+    lv_indev_set_user_data(_indev, this);
+    lv_indev_set_mode(_indev, LV_INDEV_MODE_EVENT);
+    ts.ITConfig(); // Configure the touchscreen interrupt
+    tsInt.fall(callback(this, &LVGLTouchDriverDISCO_F769NI::touchPress)); // Attach the interrupt handler
 
-    _indev_drv.type = LV_INDEV_TYPE_POINTER; // touchpad
-    _indev_drv.read_cb = read;
-    _indev_drv.user_data = this;
-    /* Register the driver in LittlevGL and save the created input device object*/
-    _my_indev = lv_indev_drv_register(&_indev_drv);
 }
 
-void LVGLTouchDriverDISCO_F769NI::read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
+void LVGLTouchDriverDISCO_F769NI::read_cb(lv_indev_t * indev, lv_indev_data_t * data)
 {
     TS_StateTypeDef TS_State;
 
@@ -50,16 +52,24 @@ void LVGLTouchDriverDISCO_F769NI::read(lv_indev_drv_t * indev_drv, lv_indev_data
 
     if (TS_State.touchDetected) {
         data->state = LV_INDEV_STATE_PR;
+        data->point.x = TS_State.touchX[0];
+        data->point.y = TS_State.touchY[0];
     } else {
         data->state = LV_INDEV_STATE_REL;
     }
 
-    data->point.x = TS_State.touchX[0];
-    data->point.y = TS_State.touchY[0];
 }
 
 MBED_WEAK LVGLInputDriver *LVGLInputDriver::get_target_default_instance_touchdrv(LVGLDispDriver *disp)
 {
-    static LVGLTouchDriverDISCO_F769NI lvglTouch(disp);
-    return &lvglTouch;
+    //static LVGLTouchDriverDISCO_F769NI lvglTouch(PI_13, *queue, disp);
+    //return &lvglTouch;
+}
+
+void LVGLTouchDriverDISCO_F769NI::touchPress()
+{
+    // This function is called when the touchscreen interrupt occurs
+    // It will trigger a read of the touchscreen state
+    _queue->call(lv_indev_read,_indev);
+    
 }
