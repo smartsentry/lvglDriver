@@ -21,7 +21,7 @@
  */
 
 #include "LVGLDispDriverBase.h"
-//#include "LVGLInputDriverBase.h"
+#include "LVGLInputDriverBase.h"
 
 LVGLDispDriver::LVGLDispDriver(uint32_t horRes, uint32_t verRes)
 {
@@ -29,13 +29,9 @@ LVGLDispDriver::LVGLDispDriver(uint32_t horRes, uint32_t verRes)
     _horRes = horRes;
     _verRes = verRes;
 
-    /* make sure lvgl is initialized (only wanrning) */
-    /* TODO: call only once in the first instance of a driver */
-    lv_init();
-
-    //lv_disp_drv_init(&_disp_drv);                    /*Basic initialization*/
-
-
+    if (!lv_is_initialized()) {
+        lv_init();
+    }
 }
 
 #if 0
